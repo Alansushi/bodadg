@@ -975,14 +975,13 @@
       <span class="tag">Confirmación de Asistencia</span>
       <h2 class="section-title">Confirma tu Asistencia</h2>
       <div class="divider center"></div>
-      <!-- TODO: Actualizar con la fecha límite real de confirmación -->
       <p style="color:var(--gray-mid);font-weight:300;font-size:.9rem;margin-top:1rem;">
-        Por favor confirma tu asistencia a tiempo <!-- TODO: agregar "antes del DD de Mes de YYYY" -->
+        Por favor confirma tu asistencia a tiempo
       </p>
     </div>
 
     <div class="rsvp-wrap fi">
-      <form id="rsvpForm" onsubmit="handleRSVP(event)" novalidate>
+      <form id="rsvpForm" novalidate>
 
         <div class="form-row">
           <div class="form-group">
@@ -990,8 +989,8 @@
             <input class="form-input" type="text" id="nombre" name="nombre" placeholder="Tu nombre completo" required>
           </div>
           <div class="form-group">
-            <label class="form-label" for="email">Correo Electrónico</label>
-            <input class="form-input" type="email" id="email" name="email" placeholder="tu@correo.com">
+            <label class="form-label" for="telefono">Número de Teléfono</label>
+            <input class="form-input" type="tel" id="telefono" name="telefono" placeholder="+52 55 1234 5678">
           </div>
         </div>
 
@@ -1010,7 +1009,7 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="acomp">Número de Acompañantes</label>
-            <input class="form-input" type="number" id="acomp" name="acomp" min="0" max="5" placeholder="0" value="0">
+            <input class="form-input" type="number" id="acomp" name="acomp" min="0" max="5" placeholder="0" value="0" oninput="actualizarAcompanantes(this.value)">
           </div>
           <div class="form-group">
             <label class="form-label" for="alergias">Alergias / Restricciones</label>
@@ -1018,19 +1017,28 @@
           </div>
         </div>
 
+        <!-- Contenedor dinámico de acompañantes -->
+        <div id="acompanantesContainer" style="
+          overflow: hidden;
+          max-height: 0;
+          opacity: 0;
+          transition: max-height 0.4s ease, opacity 0.3s ease;
+        "></div>
+
         <div class="form-group">
           <label class="form-label" for="mensaje">Mensaje para los Novios (opcional)</label>
           <textarea class="form-input" id="mensaje" name="mensaje" placeholder="Déjanos una nota especial..."></textarea>
         </div>
 
-        <!-- TODO: To receive responses, connect this form to Formspree (formspree.io) or a backend -->
-        <button type="submit" class="btn btn-gold" style="width:100%;justify-content:center;padding:1rem;">
+        <div id="formError" style="display:none;color:#c0392b;font-size:.85rem;margin-bottom:1rem;padding:.75rem;background:#fdf0ef;border-radius:8px;"></div>
+
+        <button type="button" onclick="handleRSVP()" class="btn btn-gold" id="submitBtn" style="width:100%;justify-content:center;padding:1rem;">
           Enviar Confirmación
         </button>
 
       </form>
 
-      <div class="form-success" id="formSuccess">
+      <div class="form-success" id="formSuccess" style="display:none;">
         <div style="font-size:3rem;margin-bottom:1rem;">💌</div>
         <h3>¡Gracias por confirmar!</h3>
         <p>Hemos recibido tu respuesta. ¡Nos vemos pronto para celebrar juntos!</p>
@@ -1070,9 +1078,7 @@
   <div class="footer-copy">© 2026 · Hecho con amor por <a href="https://www.instagram.com/adobleg_?igsh=MXYydmdreWtvc3Izdw%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" style="font-weight: bold; text-decoration: underline;">Alan G.</a></div> 
 </footer>
 
-<!-- =====================================================
-     JAVASCRIPT
-===================================================== -->
+
 <script>
   // =====================================================
   // TODO: Verificar la hora exacta de inicio con los novios
@@ -1216,6 +1222,159 @@
   window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
 </script>
 <script defer src="/_vercel/speed-insights/script.js"></script>
+<script>
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/TU_URL_AQUI/exec";
+
+  /*
+  ── CÓDIGO PARA APPS SCRIPT ────────────────────────────────────
+
+  function doPost(e) {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    const data  = JSON.parse(e.postData.contents);
+
+    const fila = [
+      new Date(),
+      data.nombre,
+      data.telefono,
+      data.asistencia,
+      data.acompanantes,
+      data.alergias,
+      data.mensaje
+    ];
+
+    // Agrega los nombres de acompañantes dinámicamente
+    if (data.nombresAcompanantes && data.nombresAcompanantes.length > 0) {
+      data.nombresAcompanantes.forEach((nombre, i) => {
+        fila.push(nombre);
+      });
+    }
+
+    sheet.appendRow(fila);
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ result: "success" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  ──────────────────────────────────────────────────────────────
+  */
+
+  function pickRadio(val) {
+    document.getElementById("rl-si").classList.toggle("active", val === "si");
+    document.getElementById("rl-no").classList.toggle("active", val === "no");
+    document.querySelector(`input[name="asistencia"][value="${val}"]`).checked = true;
+  }
+
+  function actualizarAcompanantes(valor) {
+    const cantidad = parseInt(valor) || 0;
+    const container = document.getElementById("acompanantesContainer");
+
+    // Limpia el contenedor
+    container.innerHTML = "";
+
+    if (cantidad >= 1) {
+      // Genera un campo por cada acompañante
+      for (let i = 1; i <= Math.min(cantidad, 5); i++) {
+        const div = document.createElement("div");
+        div.className = "form-group";
+        div.style.cssText = "margin-bottom: 0.75rem;";
+        div.innerHTML = `
+          <label class="form-label" for="acomp_nombre_${i}">
+            Nombre completo — Acompañante ${i} *
+          </label>
+          <input
+            class="form-input"
+            type="text"
+            id="acomp_nombre_${i}"
+            name="acomp_nombre_${i}"
+            placeholder="Nombre del acompañante ${i}"
+            required
+          >
+        `;
+        container.appendChild(div);
+      }
+
+      // Anima la apertura
+      container.style.maxHeight = (cantidad * 90) + "px";
+      container.style.opacity   = "1";
+      container.style.marginBottom = "1rem";
+    } else {
+      // Cierra con animación
+      container.style.maxHeight  = "0";
+      container.style.opacity    = "0";
+      container.style.marginBottom = "0";
+    }
+  }
+
+  async function handleRSVP() {
+    const errorBox  = document.getElementById("formError");
+    const submitBtn = document.getElementById("submitBtn");
+    errorBox.style.display = "none";
+
+    // ── Validación ──────────────────────────────────────────────
+    const nombre     = document.getElementById("nombre").value.trim();
+    const asistencia = document.querySelector('input[name="asistencia"]:checked');
+    const cantidad   = parseInt(document.getElementById("acomp").value) || 0;
+
+    if (!nombre) {
+      errorBox.textContent = "Por favor ingresa tu nombre completo.";
+      errorBox.style.display = "block";
+      return;
+    }
+    if (!asistencia) {
+      errorBox.textContent = "Por favor indica si asistirás o no.";
+      errorBox.style.display = "block";
+      return;
+    }
+
+    // Valida que todos los nombres de acompañantes estén llenos
+    const nombresAcompanantes = [];
+    for (let i = 1; i <= cantidad; i++) {
+      const campo = document.getElementById(`acomp_nombre_${i}`);
+      if (campo) {
+        const val = campo.value.trim();
+        if (!val) {
+          errorBox.textContent = `Por favor ingresa el nombre del acompañante ${i}.`;
+          errorBox.style.display = "block";
+          return;
+        }
+        nombresAcompanantes.push(val);
+      }
+    }
+
+    // ── Datos a enviar ──────────────────────────────────────────
+    const payload = {
+      nombre:              nombre,
+      telefono:            document.getElementById("telefono").value.trim(),
+      asistencia:          asistencia.value === "si" ? "Sí asiste" : "No asiste",
+      acompanantes:        cantidad,
+      alergias:            document.getElementById("alergias").value.trim() || "Ninguna",
+      mensaje:             document.getElementById("mensaje").value.trim(),
+      nombresAcompanantes: nombresAcompanantes
+    };
+
+    // ── Envío ───────────────────────────────────────────────────
+    submitBtn.disabled    = true;
+    submitBtn.textContent = "Enviando...";
+
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method:  "POST",
+        mode:    "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(payload)
+      });
+
+      document.getElementById("rsvpForm").style.display   = "none";
+      document.getElementById("formSuccess").style.display = "block";
+
+    } catch (err) {
+      errorBox.textContent = "Hubo un error al enviar. Por favor intenta de nuevo.";
+      errorBox.style.display  = "block";
+      submitBtn.disabled      = false;
+      submitBtn.textContent   = "Enviar Confirmación";
+    }
+  }
+</script>
 
 </body>
 </html>
