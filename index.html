@@ -947,7 +947,7 @@
           <div class="hotel-stars">★★★+</div>
           <div class="hotel-name">Hoteles y Airbnbs cercanos</div>
           <div class="hotel-dist">📍 ~5 min del venue</div>
-          <p class="hotel-desc">Te recomendamo diversas opciones de hospedaje cerca del jardín, consulta la siguiente lista ó  si tienes cualquier duda, puedes contactar al concierge al +52 56 6392 2989</p>
+          <p class="hotel-desc">Te recomendamos diversas opciones de hospedaje cerca del jardín, consulta la siguiente lista ó  si tienes cualquier duda, puedes contactar al concierge al +52 56 6392 2989</p>
           <div class="hotel-price"><!-- TODO: Rango de precios referencial --></div>
           <!-- TODO: Agregar link a búsqueda de Airbnb o Booking si deseas -->
           <a href="https://drive.google.com/file/d/1k6ZY0-NRpZjaKlb_mxsfTi2SMYs4I_h7/view?usp=drivesdk" class="btn btn-outline" target="_blank" rel="noopener">Ver opciones →</a>
@@ -1218,44 +1218,13 @@
 <script>
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyoO_O8dBQnlO-vvKuuy-c05Wx1QaVU1zH5vwAybtZ-zgzW7Ldw_JOVdinBHYJV_cvV/exec";
 
-  /*
-  ── CÓDIGO PARA APPS SCRIPT ────────────────────────────────────
 
-  function doPost(e) {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    const data  = JSON.parse(e.postData.contents);
 
-    const fila = [
-      new Date(),
-      data.nombre,
-      data.telefono,
-      data.asistencia,
-      data.acompanantes,
-      data.alergias,
-      data.mensaje
-    ];
-
-    // Agrega los nombres de acompañantes dinámicamente
-    if (data.nombresAcompanantes && data.nombresAcompanantes.length > 0) {
-      data.nombresAcompanantes.forEach((nombre, i) => {
-        fila.push(nombre);
-      });
-    }
-
-    sheet.appendRow(fila);
-
-    return ContentService
-      .createTextOutput(JSON.stringify({ result: "success" }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-  ──────────────────────────────────────────────────────────────
-  */
-
-  function pickRadio(val) {
-    document.getElementById("rl-si").classList.toggle("active", val === "si");
-    document.getElementById("rl-no").classList.toggle("active", val === "no");
-    document.querySelector(`input[name="asistencia"][value="${val}"]`).checked = true;
-  }
+  // function pickRadio(val) {
+  //   document.getElementById("rl-si").classList.toggle("active", val === "si");
+  //   document.getElementById("rl-no").classList.toggle("active", val === "no");
+  //   document.querySelector(`input[name="asistencia"][value="${val}"]`).checked = true;
+  // }
 
   function actualizarAcompanantes(valor) {
     const cantidad = parseInt(valor) || 0;
@@ -1263,7 +1232,7 @@
 
     // Limpia el contenedor
     container.innerHTML = "";
-
+ 
     if (cantidad >= 1) {
       // Genera un campo por cada acompañante
       for (let i = 1; i <= Math.min(cantidad, 5); i++) {
